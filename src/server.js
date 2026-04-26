@@ -1,5 +1,6 @@
 import express from 'express';
 import morgan from 'morgan';
+import userRoutes from './routes/userRoutes.js';
 import courseRoutes from './routes/courseRoutes.js'
 import assignmentRoutes from './routes/assignmentRoutes.js'
 import authRoutes from './routes/authRoutes.js';
@@ -22,10 +23,11 @@ try{
 }
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
 app.user('/api/assignments', assignmentRoutes);
 app.user('/api/comments', commentRoutes);
-app.use('/api/auth', authroutes);
+app.use('/api/auth', authRoutes);
 
 app.use((req, res, next) => {
     const err = new Error('Not Found');

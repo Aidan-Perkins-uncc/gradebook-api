@@ -1,6 +1,6 @@
 import prisma from '../config/db.js';
 
-export async function createUser(data) {
+export async function create(data) {
     try{
         const newUser = await prisma.user.create({
             data,
@@ -17,10 +17,44 @@ export async function createUser(data) {
     }
 }
 
-export async function findUserByEmail(email) {
+export async function findByEmail(email) {
     return prisma.user.findUnique({ where: { email } });
 }
 
-export async function findUserById(id) {
+export async function findById(id) {
     return prisma.user.findUnique({ where: { id } });
+}
+
+export async function getAll() {
+    return prisma.user.findMany({omit: {password: true}});
+}
+
+export async function update(id, data) {
+    try {
+        const updatedUser = await prisma.user.update({
+            where: { id },
+            data,
+            omit: { password: true },
+        });
+        return updatedUser;
+    } catch (error) {
+        if (error.code === 'P2025') {
+            const err = new Error('User not found');
+            err.status = 404;
+            throw err;
+        }
+    }     throw error;
+}
+
+export async function remove(id) {
+    try {
+        await prisma.user.delete({ where: { id } });
+    } catch (error) {
+        if (error.code === 'P2025') {
+            const err = new Error('User not found');
+            err.status = 404;
+            throw err;
+        }
+        throw error;
+    }
 }
