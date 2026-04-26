@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Users {
+  id Int @id @default(autoincrement())
+  name String
+  email String @unique
+  password String
+  role Role @default(USER)
+
+  courses Courses[]
+
+  courseMembers CourseMembers[]
+  @@map("users")
+}
+
+model Courses {
+  id Int @id @default(autoincrement())
+  title String
+  department String
+  description String
+  userId Int @map("user_id")
+  user Users @relation(fields: [userId], references: [id])
+
+
+  assignments Assignments[]
+
+  courseMembers CourseMembers[]
+  @@map("cpirses")
+}
+
+model Assignments{
+  id Int @id @default(autoincrement())
+  title String
+  description String
+  courseId Int @map("course_id")
+  course Courses @relation(fields: [courseId], references: [id])
+  grades Int? @default(0)
+
+  comments Comments[]
+  @@map("assignments")
+}
+
+model Comments {
+  id Int @id @default(autoincrement())
+  content String
+  assignmentId Int @map("assignment_id")
+  assignment Assignments @relation(fields: [assignmentId], references: [id])
+  @@map("comments")
+}
+
+model CourseMembers{
+  id Int @id @default(autoincrement())
+  userId Int @map("user_id")
+  courseId Int @map("course_id")
+  user Users @relation(fields: [userId], references: [id])
+  course Courses @relation(fields: [courseId], references: [id])
+  @@map("course_members")
+}
+
+enum Role {
+  USER
+  TEACHER
+}

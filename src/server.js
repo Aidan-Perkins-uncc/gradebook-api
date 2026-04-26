@@ -24,7 +24,7 @@ try{
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use('/api/courses', courseRoutes);
 app.user('/api/assignments', assignmentRoutes);
-
+app.user('/api/comments', commentRoutes);
 app.use('/api/auth', authroutes);
 
 app.use((req, res, next) => {
