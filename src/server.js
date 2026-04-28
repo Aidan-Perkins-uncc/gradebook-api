@@ -4,12 +4,13 @@ import userRoutes from './routes/userRoutes.js';
 import courseRoutes from './routes/courseRoutes.js'
 import assignmentRoutes from './routes/assignmentRoutes.js'
 import authRoutes from './routes/authRoutes.js';
+import commentRoutes from './routes/commentRoutes.js';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'js-yaml'
 import fs from 'fs'
 
 const app = express();
-const port = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 if(process.env.NODE_ENV !== 'test') app.use(morgan('tiny'));
@@ -25,8 +26,8 @@ try{
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
-app.user('/api/assignments', assignmentRoutes);
-app.user('/api/comments', commentRoutes);
+app.use('/api/assignments', assignmentRoutes);
+app.use('/api/comments', commentRoutes);
 app.use('/api/auth', authRoutes);
 
 app.use((req, res, next) => {

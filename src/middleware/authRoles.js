@@ -1,10 +1,9 @@
-export function authorizeRoles(...allowedRoles) {
+export function authorizedRoles(...allowedRoles) {
   return function (req, res, next) {
     if (allowedRoles.includes(req.user.role)) {
       return next();
-    } else if (req.user.id === parseInt(req.params.id, 10)) {
-      return next();
-    } else {
+    } 
+     else {
       const error = new Error('Forbidden: insufficient permission');
       error.status = 403;
       return next(error);

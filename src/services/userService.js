@@ -15,7 +15,13 @@ export async function findUserByEmail(email) {
 }
 
 export async function findUserById(id) {
-    return findById(id);
+    const user = await findById(id);
+    if (!user) {
+        const error = new Error('User not found');
+        error.status = 404;
+        throw error;
+    }
+    return user;
 }
 
 export async function getAllUsers() {
@@ -28,4 +34,8 @@ export async function updateUser(id, data) {
 
 export async function deleteUser(id) {
     return remove(id);
+}
+
+export async function updateUserRole(id, role) {
+    return update(id, { role });
 }

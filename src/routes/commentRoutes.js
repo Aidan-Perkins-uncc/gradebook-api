@@ -14,16 +14,18 @@ import {
   deleteCommentHandler,
 } from '../controllers/commentController.js';
 
+import { authorizeCommentOwnership } from '../middleware/authorizeOwnershipComment.js';
+import { authenticate } from '../middleware/authenticate.js';
 const router = express.Router();
 
 router.get('/', validateCommentsQuery, getAllCommentsHandler);
 
 router.get('/:id', validateId, getCommentByIdHandler);
 
-router.post('/', validateCreateComment, createCommentHandler);
+router.post('/', authenticate, validateCreateComment, createCommentHandler);
 
-router.put('/:id', validateId, validateUpdateComment, updateCommentHandler);
+router.put('/:id', authenticate, authorizeCommentOwnership, validateId,   validateUpdateComment, updateCommentHandler);
 
-router.delete('/:id', validateId, deleteCommentHandler);
+router.delete('/:id', authenticate, authorizeCommentOwnership, validateId, deleteCommentHandler);
 
 export default router;

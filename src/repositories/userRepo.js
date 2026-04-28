@@ -2,7 +2,7 @@ import prisma from '../config/db.js';
 
 export async function create(data) {
     try{
-        const newUser = await prisma.user.create({
+        const newUser = await prisma.users.create({
             data,
             omit: { password: true},
         });
@@ -18,37 +18,48 @@ export async function create(data) {
 }
 
 export async function findByEmail(email) {
-    return prisma.user.findUnique({ where: { email } });
+    return prisma.users.findUnique({ where: { email } });
 }
 
 export async function findById(id) {
-    return prisma.user.findUnique({ where: { id } });
+    try{
+        return await prisma.users.findUniqueOrThrow({ where: { id } });
+    } catch (error) {
+        if (error.code === 'P2025') {
+            const err = new Error(`User ${id} not found`);
+            err.status = 404;
+            throw err;
+        }
+        throw error;
+    }
 }
 
 export async function getAll() {
-    return prisma.user.findMany({omit: {password: true}});
+    return prisma.users.findMany({omit: {password: true}});
 }
 
 export async function update(id, data) {
     try {
-        const updatedUser = await prisma.user.update({
+        const updatedUser = await prisma.users.update({
             where: { id },
             data,
             omit: { password: true },
         });
         return updatedUser;
-    } catch (error) {
+    } catch (error) {//console.log(error)
         if (error.code === 'P2025') {
             const err = new Error('User not found');
             err.status = 404;
             throw err;
         }
-    }     throw error;
+        throw error;
+    }      
+    
 }
 
 export async function remove(id) {
     try {
-        await prisma.user.delete({ where: { id } });
+        await prisma.users.delete({ where: { id } });
     } catch (error) {
         if (error.code === 'P2025') {
             const err = new Error('User not found');

@@ -6,7 +6,7 @@ import {
     remove,
 } from '../repositories/commentRepo.js';
 
-export async function getAllcomments(options) {
+export async function getAllComments(options) {
   return getAll(options);
 }
 

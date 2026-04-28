@@ -1,0 +1,988 @@
+openapi: 3.0.3
+
+info:
+  title: Gradebook API
+  description: |
+    A RESTful API for managing courses, assignments, comments, and users in an educational gradebook system.
+    OpenAPI doc Partially generated with assistance from ClaudeAI.
+
+    ## Authentication
+    Most endpoints require a Bearer JWT token obtained via `POST /api/auth/login`.
+    Include it in the `Authorization` header as:
+    ```
+    Authorization: Bearer <token>
+    ```
+
+    ## Roles
+    | Role    | Description                                      |
+    |---------|--------------------------------------------------|
+    | `USER`    | Default role. Can view courses and assignments. |
+    | `TEACHER` | Can create and manage courses and assignments.  |
+
+  version: 1.0.0
+  contact:
+    name: Gradebook API Support
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+
+tags:
+  - name: Auth
+    description: Registration and authentication
+  - name: Users
+    description: User management (TEACHER-only for most operations)
+  - name: Courses
+    description: Course management
+  - name: Assignments
+    description: Assignment management within courses
+  - name: Comments
+    description: Comments on assignments
+
+# ─────────────────────────────────────────────
+# PATHS
+# ─────────────────────────────────────────────
+paths:
+
+  # ── AUTH ──────────────────────────────────
+  /auth/signup:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      operationId: signUp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpRequest'
+            example:
+              name: Jane Doe
+              email: jane@example.com
+              password: securePass1
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate and obtain a JWT
+      operationId: logIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: jane@example.com
+              password: securePass1
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ── USERS ─────────────────────────────────
+  /users:
+    get:
+      tags: [Users]
+      summary: Get all users
+      description: Returns a list of all users. **Requires TEACHER role.**
+      operationId: getAllUsers
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Get a user by ID
+      description: Returns the user with the given ID. **Requires authentication.**
+      operationId: getUserById
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Users]
+      summary: Update a user's name, email, or password
+      description: Updates one or more profile fields of the specified user. **Requires TEACHER role.**
+      operationId: updateUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+            example:
+              name: Jane Smith
+              email: janesmith@example.com
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Users]
+      summary: Delete a user by ID
+      description: Permanently deletes the user. **Requires TEACHER role.**
+      operationId: deleteUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '204':
+          description: User deleted successfully
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/{id}/role:
+    put:
+      tags: [Users]
+      summary: Update a user's role
+      description: Changes the role of the specified user to `USER` or `TEACHER`. **Requires TEACHER role.**
+      operationId: updateUserRole
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role:
+                  $ref: '#/components/schemas/Role'
+            example:
+              role: TEACHER
+      responses:
+        '200':
+          description: Role updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── COURSES ───────────────────────────────
+  /courses:
+    get:
+      tags: [Courses]
+      summary: Get all courses
+      description: Returns a paginated, sortable list of courses. **Requires TEACHER role.**
+      operationId: getAllCourses
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SortBy'
+        - $ref: '#/components/parameters/Order'
+        - $ref: '#/components/parameters/Offset'
+        - name: limit
+          in: query
+          description: Number of courses to return (1–50)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+      responses:
+        '200':
+          description: A list of courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourseResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags: [Courses]
+      summary: Create a course
+      description: Creates a new course owned by the authenticated user. **Requires TEACHER role.**
+      operationId: createCourse
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseRequest'
+            example:
+              title: Introduction to Algorithms
+              department: CS
+              description: A foundational course covering sorting, searching, and complexity.
+      responses:
+        '201':
+          description: Course created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /courses/{id}:
+    get:
+      tags: [Courses]
+      summary: Get a course by ID
+      operationId: getCourseById
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200':
+          description: Course found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Courses]
+      summary: Update a course
+      description: Updates one or more fields of a course. **Requires TEACHER role and course ownership.**
+      operationId: updateCourse
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseRequest'
+            example:
+              description: Updated course description with more detail.
+      responses:
+        '200':
+          description: Course updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Courses]
+      summary: Delete a course
+      description: Permanently deletes a course. **Requires TEACHER role and course ownership.**
+      operationId: deleteCourse
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '204':
+          description: Course deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── ASSIGNMENTS ───────────────────────────
+  /assignments:
+    get:
+      tags: [Assignments]
+      summary: Get all assignments
+      description: |
+        Returns a list of assignments. `courseId` and `title` filters are validated but not yet fully wired through the controller — filtering behavior may be incomplete.
+      operationId: getAllAssignments
+      parameters:
+        - name: courseId
+          in: query
+          description: Filter by course ID
+          schema:
+            type: integer
+            minimum: 1
+        - name: title
+          in: query
+          description: Filter by title substring (3–100 characters, case-insensitive)
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 100
+      responses:
+        '200':
+          description: A list of assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AssignmentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+    
+
+  /assignments/{id}:
+    get:
+      tags: [Assignments]
+      summary: Get an assignment by ID
+      operationId: getAssignmentById
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200':
+          description: Assignment found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssignmentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Assignments]
+      summary: Create an assignment
+      description: |
+        Creates a new assignment. **Requires TEACHER role and ownership of the target course.**
+        The requesting user must be the teacher who owns the course specified by `courseId`.
+      operationId: createAssignment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: course ID to attach assignment
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignmentRequest'
+            example:
+              title: Midterm Exam
+              description: Covers chapters 1 through 6.
+              grades: 100
+      responses:
+        '201':
+          description: Assignment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssignmentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      tags: [Assignments]
+      summary: Update an assignment
+      description: Updates an assignment. **Requires authentication and ownership of the assignment's parent course.**
+      operationId: updateAssignment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignmentRequest'
+            example:
+              title: Updated Midterm Exam
+      responses:
+        '204':
+          description: Assignment updated successfully
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Assignments]
+      summary: Delete an assignment
+      description: Permanently deletes an assignment. **Requires authentication and ownership.**
+      operationId: deleteAssignment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '204':
+          description: Assignment deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── COMMENTS ──────────────────────────────
+  /comments:
+    get:
+      tags: [Comments]
+      summary: Get all comments
+      description: Returns a paginated, searchable list of comments.
+      operationId: getAllComments
+      parameters:
+        - name: search
+          in: query
+          description: Search term matched against comment content (1–100 characters, case-insensitive)
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+        - name: sortBy
+          in: query
+          description: Field to sort by. Note — `createdAt` and `updatedAt` are accepted by the validator but the `Comments` model does not include timestamp fields; use `id` for reliable sorting.
+          schema:
+            type: string
+            enum: [id, createdAt, updatedAt]
+            default: id
+        - $ref: '#/components/parameters/Order'
+        - $ref: '#/components/parameters/Offset'
+        - name: limit
+          in: query
+          description: Number of comments to return (1–100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 5
+      responses:
+        '200':
+          description: A list of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+    post:
+      tags: [Comments]
+      summary: Create a comment
+      description: Adds a comment on an assignment. `userId` is derived from the auth token — do not pass it in the body. **Requires authentication.**
+      operationId: createComment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentRequest'
+            example:
+              content: Great assignment, very challenging!
+              assignmentId: 1
+      responses:
+        '201':
+          description: Comment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /comments/{id}:
+    get:
+      tags: [Comments]
+      summary: Get a comment by ID
+      operationId: getCommentById
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200':
+          description: Comment found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Comments]
+      summary: Update a comment
+      description: Updates a comment's content. **Requires authentication and comment ownership.**
+      operationId: updateComment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentRequest'
+            example:
+              content: Updated comment text.
+      responses:
+        '200':
+          description: Comment updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Comments]
+      summary: Delete a comment
+      description: Permanently deletes a comment. **Requires authentication and comment ownership.**
+      operationId: deleteComment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '204':
+          description: Comment deleted
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+# ─────────────────────────────────────────────
+# COMPONENTS
+# ─────────────────────────────────────────────
+components:
+
+  # ── SECURITY ──────────────────────────────
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from `POST /api/auth/login`
+
+  # ── PARAMETERS ────────────────────────────
+  parameters:
+    PathId:
+      name: id
+      in: path
+      required: true
+      description: Resource identifier (positive integer)
+      schema:
+        type: integer
+        minimum: 1
+      example: 1
+
+    SortBy:
+      name: sortBy
+      in: query
+      description: Field to sort results by
+      schema:
+        type: string
+        enum: [id, title, description, department]
+        default: id
+
+    Order:
+      name: order
+      in: query
+      description: Sort direction
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: asc
+
+    Offset:
+      name: offset
+      in: query
+      description: Number of records to skip for pagination
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
+  # ── SCHEMAS ───────────────────────────────
+  schemas:
+
+    # Auth
+    SignUpRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 50
+          example: Jane Doe
+        email:
+          type: string
+          format: email
+          example: jane@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 64
+          example: securePass1
+        role:
+          $ref: '#/components/schemas/Role'
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: jane@example.com
+        password:
+          type: string
+          format: password
+          example: securePass1
+
+    LoginResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: Signed JWT to use as a Bearer token
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    # Users
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Jane Doe
+        email:
+          type: string
+          format: email
+          example: jane@example.com
+        role:
+          $ref: '#/components/schemas/Role'
+
+    UpdateUserRequest:
+      type: object
+      description: At least one field must be provided.
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 20
+          example: Jane Smith
+        email:
+          type: string
+          format: email
+          example: janesmith@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 64
+          example: newSecurePass1
+
+    # Courses — shared by create (all fields required) and update (at least one required)
+    CourseRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 3
+          example: Introduction to Algorithms
+        department:
+          type: string
+          minLength: 3
+          maxLength: 4
+          description: Abbreviated department code (e.g. CS, MATH)
+          example: CS
+        description:
+          type: string
+          minLength: 10
+          example: A foundational course covering sorting, searching, and complexity.
+
+    CourseResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Introduction to Algorithms
+        department:
+          type: string
+          example: CS
+        description:
+          type: string
+          example: A foundational course covering sorting, searching, and complexity.
+        userId:
+          type: integer
+          description: ID of the TEACHER who owns this course
+          example: 2
+
+    # Assignments — shared by create and update; courseId and grades are create-only
+    AssignmentRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: Midterm Exam
+        description:
+          type: string
+          maxLength: 500
+          example: Covers chapters 1 through 6.
+        grades:
+          type: integer
+          description: Maximum grade value. Required on create.
+          example: 100
+
+    AssignmentResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Midterm Exam
+        description:
+          type: string
+          example: Covers chapters 1 through 6.
+        courseId:
+          type: integer
+          example: 3
+        grades:
+          type: integer
+          nullable: true
+          example: 100
+
+    # Comments — shared by create and update; assignmentId is create-only
+    CommentRequest:
+      type: object
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          example: Great assignment, very challenging!
+        assignmentId:
+          type: integer
+          minimum: 1
+          description: Required on create. ID of the assignment being commented on.
+          example: 1
+
+    CommentResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        content:
+          type: string
+          example: Great assignment, very challenging!
+        assignmentId:
+          type: integer
+          example: 5
+        userId:
+          type: integer
+          description: ID of the user who created the comment
+          example: 2
+
+    # Shared / Enums
+    Role:
+      type: string
+      enum: [USER, TEACHER]
+      default: USER
+      description: |
+        - `USER` — default student role  
+        - `TEACHER` — elevated role with course/assignment management privileges
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Resource not found
+
+    ValidationError:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: email
+              message:
+                type: string
+                example: Email is not valid
+
+  # ── RESPONSES ─────────────────────────────
+  responses:
+    ValidationError:
+      description: One or more request fields failed validation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+
+    Unauthorized:
+      description: Missing or invalid authentication token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Not authenticated. Please provide a valid token.
+
+    Forbidden:
+      description: Authenticated user lacks sufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Forbidden: insufficient permission"
+
+    NotFound:
+      description: The requested resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Resource not found
+
+    Conflict:
+      description: A resource with the provided data already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Email has already been used

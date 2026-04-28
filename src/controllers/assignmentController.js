@@ -7,10 +7,13 @@ import {
  } from '../services/assignmentService.js';
 
  export async function getAllAssignmentsHandler(req,res){
-    const {} = req.query; // fill in for searching sorting and pagination
-    const options = {}; // fill in for seaching sorting and pagination
-    let assignments = await getAllAssignments(options);
+   try{
+    const { courseId, title } = req.query; 
+    const assignments = await getAllAssignments({ courseId, title });
     res.status(200).json(assignments);
+   } catch (error) {
+      next(error);
+   }
  }
 
  export async function getAssignmentByIdHandler(req, res){
@@ -20,19 +23,20 @@ import {
  }
 
  export async function createAssignmentHandler(req, res){
-    const {title, description, courseId, grades} = req.body;
-    const newAssignment = await createAssignment({ title, description, courseId, grades, authorId: req.user.id });
-    res.status(201).json(newPost);
+    const id = parseInt(req.params.id);
+    const {title, description,  grades} = req.body;
+    const newAssignment = await createAssignment({ title, description, courseId: id, grades });
+    res.status(201).json(newAssignment);
  }
 
  export async function updateAssignmentHandler(req, res){
     const id = parseInt(req.params.id);
-    await deleteAssignment(id);
+    const updatedAssignment = await updateAssignment(id, req.body);
     res.status(204).send();
  }
 
  export async function deleteAssignmentHandler(req, res) {
     const id = parseInt(req.params.id);
-    await deletePost(id);
+    await deleteAssignment(id);
     res.status(204).send();
  }

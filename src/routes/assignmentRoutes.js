@@ -15,12 +15,15 @@ import {
 } from '../middleware/assignmentValidators.js';
 
 import { authenticate } from '../middleware/authenticate.js';
-import { authorizeOwnership } from '../middleware/authorizeOwnership.js';
+import { authorizeOwnership } from '../middleware/authorizeOwnershipAssignment.js';
+import { authorizeRoles } from '../middleware/authorizeRoles.js'
+import { authorizeCourseTeacher } from '../middleware/authorizeCourseTeacher.js'
+
 
 const router = express.Router();
 router.get('/', validateAssignmentQuery, getAllAssignmentsHandler);
 router.get('/:id', validateId, getAssignmentByIdHandler);
-router.post('/', authenticate, validateCreateAssignment, createAssignmentHandler);
+router.post('/:id', authenticate, validateId, authorizeRoles('TEACHER'), authorizeCourseTeacher, validateCreateAssignment, createAssignmentHandler);
 router.put('/:id',
     authenticate,
     validateId,

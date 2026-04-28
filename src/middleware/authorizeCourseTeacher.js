@@ -1,10 +1,10 @@
-// import { getPostById } from '../services/postService.js';
-import {getCourseById} from '../services/courseService.js';
+import { getCourseById } from "../services/courseService.js";
 
+export async function authorizeCourseTeacher(req, res, next) {
+  try {
+    const courseId = parseInt(req.params.id); 
+    
 
-export  async function authorizeOwnership(req, res, next) {
- try {
-    const courseId = parseInt(req.params.id, 10);
     const course = await getCourseById(courseId);
 
     if (!course) {
@@ -14,7 +14,7 @@ export  async function authorizeOwnership(req, res, next) {
     }
 
     if (course.userId !== req.user.id) {
-      const error = new Error("Forbidden: insufficient permission");
+      const error = new Error("Forbidden: only the course teacher can create assignments");
       error.status = 403;
       return next(error);
     }
@@ -22,6 +22,5 @@ export  async function authorizeOwnership(req, res, next) {
     return next();
   } catch (err) {
     return next(err);
-  } 
-
+  }
 }

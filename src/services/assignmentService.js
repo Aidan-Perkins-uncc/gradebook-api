@@ -1,4 +1,4 @@
-import { getAll, getById, create, update, remove } from "../repositories/assignmentsRepo";
+import { getAll, getById, create, update, remove } from "../repositories/assignmentsRepo.js";
 
 export async function getAllAssignments(options){
     return getAll(options);

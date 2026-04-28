@@ -1,10 +1,20 @@
 import prisma from '../config/db.js';
 
-export async function getAll({ /* params */ }) {
+export async function getAll({ courseId, title }) {
+    try{
     const conditions = {};
     // condition logic
-    const assignments = await prisma.assignments.findMany({ /* condition logic */ });
+    if(courseId){
+        conditions.courseId = parseInt(courseId, 10);
+    }
+    if(title){
+        conditions.title = { contains: title, mode: 'insensitive'};
+    }
+    const assignments = await prisma.assignments.findMany({ where: conditions });
     return assignments;
+    } catch (error){
+        throw error;
+    }
 }
 
 export async function getById(id){
@@ -23,7 +33,7 @@ export async function update(id, updatedData){
             where: { id },
             data: updatedData,
         });
-        return updatedPost;
+        return updatedAssignment;
     } catch (error) {
         if(error.code === 'P2025') return null;
         throw error;

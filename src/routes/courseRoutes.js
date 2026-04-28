@@ -13,25 +13,27 @@ import {
     validateUpdateCourse,
     validateCourseQuery,
 } from '../middleware/courseValidators.js';
-
+import { authorizeRoles } from '../middleware/authorizeRoles.js';
 import { authenticate } from '../middleware/authenticate.js';
 import { authorizeOwnership } from '../middleware/authorizeOwnership.js';
 
 const router = express.Router();
-router.get('/', validateCourseQuery, getAllCoursesHandler);
-router.get('/:id', validateId, getCourseByIdHandler);
-router.post('/', authenticate, validateCreateCourse, createCourseHandler);
+router.get('/', authenticate, authorizeRoles('TEACHER'), validateCourseQuery, getAllCoursesHandler);
+router.get('/:id', authenticate, validateId, getCourseByIdHandler);
+router.post('/', authenticate, authorizeRoles('TEACHER'), validateCreateCourse, createCourseHandler);
 router.put(
     '/:id',
     authenticate,
     validateId,
+    authorizeRoles('TEACHER'),
     authorizeOwnership,
     validateUpdateCourse,
     updateCourseHandler,
 );
 router.delete(
-    ':/id',
+    '/:id',
     authenticate,
+    authorizeRoles('TEACHER'),
     authorizeOwnership,
     deleteCourseHandler,
 );

@@ -1,10 +1,10 @@
 import { 
-    getAllCourses,
-    getCourseById,
-    createCourse,
-    updateCourse,
-    removeCourse,
- } from "../repositories/coursesRepo";
+    getAll,
+    getById,
+    create,
+    update,
+    remove,
+ } from "../repositories/coursesRepo.js";
 
 export async function getAllCourses(options){
     return getAll(options);

@@ -3,12 +3,9 @@ import prisma from '../config/db.js'
 export async function getAll({ search, sortBy, order, offset, limit }){
    const conditions = {};
   if (search) {
-    conditions.OR = [
-      { title: { contains: search, mode: 'insensitive' } },
-      { content: { contains: search, mode: 'insensitive' } },
-    ];
+    conditions.content = { contains: search, mode: 'insensitive'};
   }
-  const comments = await prisma.comment.findMany({
+  const comments = await prisma.comments.findMany({
     where: conditions,
     orderBy: { [sortBy]: order },
     take: limit,
@@ -18,18 +15,18 @@ export async function getAll({ search, sortBy, order, offset, limit }){
 }
 
 export async function getById(id) {
-  const comment = await prisma.comment.findUnique({ where: { id } });
+  const comment = await prisma.comments.findUnique({ where: { id } });
   return comment;
 }
 
 export function create(commentData) {
-  const newcomment = prisma.comment.create({ data: commentData });
+  const newcomment = prisma.comments.create({ data: commentData });
   return newcomment;
 }
 
 export async function update(id, updatedData) {
   try {
-    const updatedcomment = await prisma.comment.update({
+    const updatedcomment = await prisma.comments.update({
       where: { id },
       data: updatedData,
     });
@@ -42,7 +39,7 @@ export async function update(id, updatedData) {
 
 export async function remove(id) {
   try {
-    const deletedcomment = await prisma.comment.delete({
+    const deletedcomment = await prisma.comments.delete({
       where: { id },
     });
     return deletedcomment;

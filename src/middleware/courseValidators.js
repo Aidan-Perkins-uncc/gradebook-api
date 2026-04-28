@@ -11,7 +11,7 @@ export const validateId = [
 ];
 
 export const validateCreateCourse = [
-    body('name')
+    body('title')
     .exists({values: 'falsy'})
     .withMessage('Course name is required')
     .bail()
@@ -50,22 +50,22 @@ export const validateCreateCourse = [
 export const validateUpdateCourse = [
   oneOf(
     [
-      body('name').exists({ values: 'falsy' }),
+      body('title').exists({ values: 'falsy' }),
       body('description').exists({ values: 'falsy' }),
       body('department').exists({ values: 'falsy' }),
     ],
-    { message: 'At least one field (name, department, description) must be provided' },
+    { message: 'At least one field (title, department, description) must be provided' },
   ),
 
-  body('name')
+  body('title')
     .optional()
     .trim()
     .escape()
     .isString()
-    .withMessage('name must be a string')
+    .withMessage('title must be a string')
     .bail()
     .isLength({ min: 3 })
-    .withMessage('name must be at least 3 characters'),
+    .withMessage('title must be at least 3 characters'),
 
   body('description')
     .optional()
@@ -93,8 +93,8 @@ export const validateUpdateCourse = [
 export const validateCourseQuery = [
     query('sortBy')
     .optional()
-    .isIn(['id', 'name', 'description', 'department'])
-    .withMessage('sortBy must be one of id, name, description, department'),
+    .isIn(['id', 'title', 'description', 'department'])
+    .withMessage('sortBy must be one of id, title, description, department'),
 
   query('order')
     .optional()

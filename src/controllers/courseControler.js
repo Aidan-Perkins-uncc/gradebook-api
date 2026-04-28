@@ -6,16 +6,14 @@ import {
     deleteCourse,
 } from '../services/courseService.js';
 
-export async function getAllCoursesHandler(req, res) {
-    const {
-        // search params with default values
-    } = req.query;
-
-    const options = {
-        // available parameters
-    };
-    let courses = await getAllCourses(options);
+export async function getAllCoursesHandler(req, res, next) {
+    try{
+    const { sortBy, order, offset, limit } = req.query;
+    const courses = await getAllCourses({ sortBy, order, offset, limit });
     res.status(200).json(courses);
+} catch (error){
+    next(error);
+}
 }
 
 export async function getCourseByIdHandler(req, res){
@@ -31,7 +29,7 @@ export async function createCourseHandler(req, res) {
 }
 
 export async function updateCourseHandler(req, res){
-    const id = parseint(req.params.id);
+    const id = parseInt(req.params.id);
     const { title, department, description } = req.body;
     const updatedCourse = await updateCourse(id, { title, department, description });
     res.status(200).json(updatedCourse);

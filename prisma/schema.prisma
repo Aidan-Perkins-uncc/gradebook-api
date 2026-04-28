@@ -20,7 +20,7 @@ model Users {
   role Role @default(USER)
 
   courses Courses[]
-
+  comments Comments[]
   courseMembers CourseMembers[]
   @@map("users")
 }
@@ -31,13 +31,13 @@ model Courses {
   department String
   description String
   userId Int @map("user_id")
-  user Users @relation(fields: [userId], references: [id])
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-
+  
   assignments Assignments[]
-
+  
   courseMembers CourseMembers[]
-  @@map("cpirses")
+  @@map("courses")
 }
 
 model Assignments{
@@ -56,7 +56,9 @@ model Comments {
   id Int @id @default(autoincrement())
   content String
   assignmentId Int @map("assignment_id")
-  assignment Assignments @relation(fields: [assignmentId], references: [id])
+  assignment Assignments @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  userId Int @map("user_id")
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@map("comments")
 }
 
@@ -64,7 +66,7 @@ model CourseMembers{
   id Int @id @default(autoincrement())
   userId Int @map("user_id")
   courseId Int @map("course_id")
-  user Users @relation(fields: [userId], references: [id])
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
   course Courses @relation(fields: [courseId], references: [id])
   @@map("course_members")
 }
