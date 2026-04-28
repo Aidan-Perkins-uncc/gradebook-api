@@ -29,6 +29,9 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/auth', authRoutes);
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
 
 app.use((req, res, next) => {
     const err = new Error('Not Found');
