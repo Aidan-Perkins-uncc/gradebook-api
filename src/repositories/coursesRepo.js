@@ -1,8 +1,18 @@
 import prisma from '../config/db.js'
 
 export async function getAll({ sortBy, order, offset, limit}){
-    const limit_ = parseInt(limit);
+    if (!sortBy){
+        sortBy = 'id';
+    }
+    if (!offset){
+        offset = 0
+    }
     const skip_ = parseInt(offset);
+    if (!limit){
+        limit = 50;
+    }
+    const limit_ = parseInt(limit);
+
     const courses = await prisma.courses.findMany({
         orderBy: { [sortBy]: order },
         take: limit_,
