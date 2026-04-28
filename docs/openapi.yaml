@@ -26,7 +26,7 @@ info:
 servers:
   - url: http://localhost:3000/api
     description: Local development server
-  - url: https://gradebook-api-service.onrender.com
+  - url: https://gradebook-api-service.onrender.com/api
     description: Production server
 
 tags:
