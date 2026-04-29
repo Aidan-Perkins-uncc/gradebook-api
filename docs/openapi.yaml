@@ -585,13 +585,7 @@ paths:
             type: string
             minLength: 1
             maxLength: 100
-        - name: sortBy
-          in: query
-          description: Field to sort by. Note - createdAt and updatedAt are accepted by the validator but the Comments model does not include timestamp fields; use id for reliable sorting.
-          schema:
-            type: string
-            enum: [id, createdAt, updatedAt]
-            default: id
+        
         - $ref: '#/components/parameters/Order'
         - $ref: '#/components/parameters/Offset'
         - name: limit
@@ -816,8 +810,7 @@ components:
           type: string
           minLength: 3
           maxLength: 4
-          description: Abbreviated department code (e.g. CS, MATH)
-          example: CS
+          example: ITSC
         description:
           type: string
           minLength: 10
@@ -913,12 +906,7 @@ components:
 
       
 
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          example: Resource not found
+    
       
   responses:
     ValidationError:
@@ -945,7 +933,11 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            type: object
+            properties:
+              error:
+                type: string
+                example: Not authenticated
           example:
             error: Not authenticated. Please provide a valid token.
 
@@ -954,7 +946,11 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            type: object
+            properties:
+              error:
+                type: string
+                example: Insufficient permission
           example:
             error: "Forbidden: insufficient permission"
 
@@ -963,7 +959,11 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            type: object
+            properties:
+              error:
+                type: string
+                example: Resource not found
           example:
             error: Resource not found
 
@@ -972,6 +972,10 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            type: object
+            properties:
+              error:
+                type: string
+                example: Email has already been used
           example:
             error: Email has already been used
