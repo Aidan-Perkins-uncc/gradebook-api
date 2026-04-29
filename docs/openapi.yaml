@@ -919,28 +919,26 @@ components:
         error:
           type: string
           example: Resource not found
-
-    ValidationError:
-      type: object
-      properties:
-        errors:
-          type: array
-          items:
-            type: object
-            properties:
-              field:
-                type: string
-                example: email
-              message:
-                type: string
-                example: Email is not valid
+      
   responses:
     ValidationError:
       description: One or more request fields failed validation
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ValidationError'
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    field:
+                      type: string
+                      example: email
+                    message:
+                      type: string
+                      example: Email is not valid
 
     Unauthorized:
       description: Missing or invalid authentication token
