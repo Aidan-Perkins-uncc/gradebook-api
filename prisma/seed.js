@@ -3,8 +3,6 @@ import 'dotenv/config';
 import prisma from '../src/config/db.js';
 
 try {
-  // Truncate using actual mapped table names (see prisma/schema.prisma @@map directives)
-  // Note: "cpirses" is the real table name for the Courses model (typo in schema @@map)
   await prisma.$queryRaw`TRUNCATE TABLE comments, assignments, course_members, courses, users RESTART IDENTITY CASCADE;`;
   console.log('Database cleared.\n');
 
@@ -37,7 +35,7 @@ try {
   const coursesData = [
     {
       title:       'Introduction to Algorithms',
-      department:  'CS',
+      department:  'ITSC',
       description: 'A foundational course covering sorting, searching, and complexity analysis.',
       userId:      teacher1.id,
     },

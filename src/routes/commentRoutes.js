@@ -19,13 +19,9 @@ import { authenticate } from '../middleware/authenticate.js';
 const router = express.Router();
 
 router.get('/', validateCommentsQuery, getAllCommentsHandler);
-
 router.get('/:id', validateId, getCommentByIdHandler);
-
 router.post('/', authenticate, validateCreateComment, createCommentHandler);
-
 router.put('/:id', authenticate, authorizeCommentOwnership, validateId,   validateUpdateComment, updateCommentHandler);
-
 router.delete('/:id', authenticate, authorizeCommentOwnership, validateId, deleteCommentHandler);
 
 export default router;

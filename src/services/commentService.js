@@ -21,7 +21,7 @@ export async function getcommentById(id) {
 }
 
 export async function createcomment(commentData) {
-  return create(commentData);
+  return await create(commentData);
 }
 
 export async function updatecomment(id, updatedData) {

@@ -1,6 +1,6 @@
 import { getCourseById } from "../services/courseService.js";
 
-export async function authorizeCourseTeacher(req, res, next) {
+export async function authorizeCourseOwnership(req, res, next) {
   try {
     const courseId = parseInt(req.params.id); 
     

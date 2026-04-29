@@ -1,9 +1,8 @@
-// import { getPostById } from '../services/postService.js';
 import {getCourseById} from '../services/courseService.js';
 
 
 export  async function authorizeOwnership(req, res, next) {
- try {
+
     const courseId = parseInt(req.params.id, 10);
     const course = await getCourseById(courseId);
 
@@ -20,8 +19,4 @@ export  async function authorizeOwnership(req, res, next) {
     }
 
     return next();
-  } catch (err) {
-    return next(err);
-  } 
-
-}
+} 

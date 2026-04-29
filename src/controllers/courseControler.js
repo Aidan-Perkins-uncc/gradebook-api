@@ -11,9 +11,9 @@ export async function getAllCoursesHandler(req, res, next) {
     const { sortBy, order, offset, limit } = req.query;
     const courses = await getAllCourses({ sortBy, order, offset, limit });
     res.status(200).json(courses);
-} catch (error){
-    next(error);
-}
+    } catch (error){
+        next(error);
+    }
 }
 
 export async function getCourseByIdHandler(req, res){

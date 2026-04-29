@@ -3,9 +3,8 @@ import prisma from '../config/db.js';
 export async function getAll({ courseId, title }) {
     try{
     const conditions = {};
-    // condition logic
     if(courseId){
-        conditions.courseId = parseInt(courseId, 10);
+        conditions.courseId = parseInt(courseId);
     }
     if(title){
         conditions.title = { contains: title, mode: 'insensitive'};

@@ -21,21 +21,7 @@ const router = express.Router();
 router.get('/', authenticate, authorizeRoles('TEACHER'), validateCourseQuery, getAllCoursesHandler);
 router.get('/:id', authenticate, validateId, getCourseByIdHandler);
 router.post('/', authenticate, authorizeRoles('TEACHER'), validateCreateCourse, createCourseHandler);
-router.put(
-    '/:id',
-    authenticate,
-    validateId,
-    authorizeRoles('TEACHER'),
-    authorizeOwnership,
-    validateUpdateCourse,
-    updateCourseHandler,
-);
-router.delete(
-    '/:id',
-    authenticate,
-    authorizeRoles('TEACHER'),
-    authorizeOwnership,
-    deleteCourseHandler,
-);
+router.put('/:id', authenticate, validateId, authorizeRoles('TEACHER'), authorizeOwnership, validateUpdateCourse, updateCourseHandler);
+router.delete('/:id', authenticate, authorizeRoles('TEACHER'), authorizeOwnership, deleteCourseHandler);
 
 export default router;

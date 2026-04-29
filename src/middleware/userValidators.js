@@ -69,12 +69,10 @@ export const validateUpdateUserRole = [
     body('role')
         .exists({values: 'falsy'})
         .withMessage('Role must exist')
-        // .bail()
         .isIn(['TEACHER','USER'])
         .withMessage('Must be TEACHER or USER'),
         handleValidationErrors,
 ];
-//  change to TEACHER and USER when we have the role implemented + add name filed
 export const validateUpdateUser = [
     oneOf([
     body('name').exists({values: 'falsy'}),

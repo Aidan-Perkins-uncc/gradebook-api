@@ -10,12 +10,12 @@ updateUserRole
 
 
 
-export async function getUserHandler(req, res) {
-    const { id } = req.user;
-    const user = await findUserById(id);
-    res.status(200).json(user);
+// export async function getUserHandler(req, res) {
+//     const { id } = req.user;
+//     const user = await findUserById(id);
+//     res.status(200).json(user);
 
-}
+// }
 
 export async function getUserByIdHandler(req, res) {
   const id = parseInt(req.params.id);

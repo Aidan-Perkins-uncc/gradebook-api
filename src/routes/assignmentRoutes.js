@@ -17,26 +17,14 @@ import {
 import { authenticate } from '../middleware/authenticate.js';
 import { authorizeOwnership } from '../middleware/authorizeOwnershipAssignment.js';
 import { authorizeRoles } from '../middleware/authorizeRoles.js'
-import { authorizeCourseTeacher } from '../middleware/authorizeCourseTeacher.js'
+import { authorizeCourseOwnership } from '../middleware/authorizeCourseOwnership.js'
 
 
 const router = express.Router();
 router.get('/', validateAssignmentQuery, getAllAssignmentsHandler);
 router.get('/:id', validateId, getAssignmentByIdHandler);
-router.post('/:id', authenticate, validateId, authorizeRoles('TEACHER'), authorizeCourseTeacher, validateCreateAssignment, createAssignmentHandler);
-router.put('/:id',
-    authenticate,
-    validateId,
-    authorizeOwnership,
-    validateUpdateAssignment,
-    updateAssignmentHandler,
-);
-router.delete(
-    '/:id',
-    authenticate,
-    validateId,
-    authorizeOwnership,
-    deleteAssignmentHandler,
-);
+router.post('/:id', authenticate, validateId, authorizeRoles('TEACHER'), authorizeCourseOwnership, validateCreateAssignment, createAssignmentHandler);
+router.put('/:id', authenticate, validateId, authorizeOwnership, validateUpdateAssignment, updateAssignmentHandler);
+router.delete('/:id', authenticate, validateId, authorizeOwnership, deleteAssignmentHandler);
 
 export default router

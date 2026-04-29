@@ -32,7 +32,7 @@ import {
  export async function updateAssignmentHandler(req, res){
     const id = parseInt(req.params.id);
     const updatedAssignment = await updateAssignment(id, req.body);
-    res.status(204).send();
+    res.status(204).json(updatedAssignment);
  }
 
  export async function deleteAssignmentHandler(req, res) {

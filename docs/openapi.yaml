@@ -3,21 +3,24 @@ openapi: 3.0.3
 info:
   title: Gradebook API
   description: |
-    A RESTful API for managing courses, assignments, comments, and users in an educational gradebook system.
-    OpenAPI doc Partially generated with assistance from ClaudeAI.
+    An API for managing courses, assignments, comments, and users in a gradebook/assignment manager system.
 
-    ## Authentication
-    Most endpoints require a Bearer JWT token obtained via `POST /api/auth/login`.
-    Include it in the `Authorization` header as:
-    ```
+    Authentication
+    Most endpoints require a Bearer JWT token obtained via POST /api/auth/login.
+    Include it in the Authorization header as:
+    
     Authorization: Bearer <token>
-    ```
+    
 
-    ## Roles
-    | Role    | Description                                      |
-    |---------|--------------------------------------------------|
-    | `USER`    | Default role. Can view courses and assignments. |
-    | `TEACHER` | Can create and manage courses and assignments.  |
+     Roles
+
+
+     Role ------ Description                                      
+    
+     USER ------ Default role. Can view courses and assignments. 
+
+
+     TEACHER ------ Can create and manage courses and assignments.  
 
   version: 1.0.0
   contact:
@@ -41,12 +44,8 @@ tags:
   - name: Comments
     description: Comments on assignments
 
-# ─────────────────────────────────────────────
-# PATHS
-# ─────────────────────────────────────────────
 paths:
 
-  # ── AUTH ──────────────────────────────────
   /auth/signup:
     post:
       tags: [Auth]
@@ -57,11 +56,29 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SignUpRequest'
-            example:
-              name: Jane Doe
-              email: jane@example.com
-              password: securePass1
+              type: object
+              required: [name, email, password, role]
+              properties:
+                name:
+                  type: string
+                  minLength: 3
+                  maxLength: 50
+                  example: Jane Doe
+                email:
+                  type: string
+                  format: email
+                  example: jane@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  maxLength: 64
+                  example: securePass1
+                role:
+                    example:
+                      name: Jane Doe
+                      email: jane@example.com
+                      password: securePass1
       responses:
         '201':
           description: User created successfully
@@ -84,28 +101,56 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
-            example:
-              email: jane@example.com
-              password: securePass1
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: jane@example.com
+                password:
+                  type: string
+                  format: password
+                  example: securePass1
       responses:
         '200':
           description: Successful authentication
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponse'
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: Signed JWT to use as a Bearer token
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         '400':
           $ref: '#/components/responses/ValidationError'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          # $ref: '#/components/responses/Unauthorized'
+            description: Bad request due to invalid credentials.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                    details:
+                      type: array
+                      items:
+                        type: string
+                  example:
+                    errors:
+                      - 'Invalid Credentials'
 
-  # ── USERS ─────────────────────────────────
+
+
   /users:
     get:
       tags: [Users]
       summary: Get all users
-      description: Returns a list of all users. **Requires TEACHER role.**
+      description: Returns a list of all users. Requires TEACHER role.
       operationId: getAllUsers
       security:
         - bearerAuth: []
@@ -127,7 +172,7 @@ paths:
     get:
       tags: [Users]
       summary: Get a user by ID
-      description: Returns the user with the given ID. **Requires authentication.**
+      description: Returns the user with the given ID. Requires authentication.
       operationId: getUserById
       security:
         - bearerAuth: []
@@ -150,7 +195,7 @@ paths:
     put:
       tags: [Users]
       summary: Update a user's name, email, or password
-      description: Updates one or more profile fields of the specified user. **Requires TEACHER role.**
+      description: Updates one or more profile fields of the specified user. Requires TEACHER role.
       operationId: updateUser
       security:
         - bearerAuth: []
@@ -184,7 +229,7 @@ paths:
     delete:
       tags: [Users]
       summary: Delete a user by ID
-      description: Permanently deletes the user. **Requires TEACHER role.**
+      description: Permanently deletes the user. Requires TEACHER role.
       operationId: deleteUser
       security:
         - bearerAuth: []
@@ -206,7 +251,7 @@ paths:
     put:
       tags: [Users]
       summary: Update a user's role
-      description: Changes the role of the specified user to `USER` or `TEACHER`. **Requires TEACHER role.**
+      description: Changes the role of the specified user to USER or TEACHER. Requires TEACHER role.
       operationId: updateUserRole
       security:
         - bearerAuth: []
@@ -221,9 +266,14 @@ paths:
               required: [role]
               properties:
                 role:
-                  $ref: '#/components/schemas/Role'
-            example:
-              role: TEACHER
+                  type: string
+                  enum: [USER, TEACHER]
+                  default: USER
+                  description: |
+                    - USER - default student role  
+                    - TEACHER - elevated role with course/assignment management privileges
+                        example:
+                          role: TEACHER
       responses:
         '200':
           description: Role updated successfully
@@ -240,12 +290,11 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # ── COURSES ───────────────────────────────
   /courses:
     get:
       tags: [Courses]
       summary: Get all courses
-      description: Returns a paginated, sortable list of courses. **Requires TEACHER role.**
+      description: Returns a paginated, sortable list of courses. Requires TEACHER role.
       operationId: getAllCourses
       security:
         - bearerAuth: []
@@ -280,7 +329,7 @@ paths:
     post:
       tags: [Courses]
       summary: Create a course
-      description: Creates a new course owned by the authenticated user. **Requires TEACHER role.**
+      description: Creates a new course owned by the authenticated user. Requires TEACHER role.
       operationId: createCourse
       security:
         - bearerAuth: []
@@ -334,7 +383,7 @@ paths:
     put:
       tags: [Courses]
       summary: Update a course
-      description: Updates one or more fields of a course. **Requires TEACHER role and course ownership.**
+      description: Updates one or more fields of a course. Requires TEACHER role and course ownership.
       operationId: updateCourse
       security:
         - bearerAuth: []
@@ -367,7 +416,7 @@ paths:
     delete:
       tags: [Courses]
       summary: Delete a course
-      description: Permanently deletes a course. **Requires TEACHER role and course ownership.**
+      description: Permanently deletes a course. Requires TEACHER role and course ownership.
       operationId: deleteCourse
       security:
         - bearerAuth: []
@@ -383,13 +432,12 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # ── ASSIGNMENTS ───────────────────────────
   /assignments:
     get:
       tags: [Assignments]
       summary: Get all assignments
       description: |
-        Returns a list of assignments. `courseId` and `title` filters are validated but not yet fully wired through the controller — filtering behavior may be incomplete.
+        Returns a list of assignments. courseId and title filters are validated but not yet fully wired through the controller - filtering behavior may be incomplete.
       operationId: getAllAssignments
       parameters:
         - name: courseId
@@ -441,8 +489,8 @@ paths:
       tags: [Assignments]
       summary: Create an assignment
       description: |
-        Creates a new assignment. **Requires TEACHER role and ownership of the target course.**
-        The requesting user must be the teacher who owns the course specified by `courseId`.
+        Creates a new assignment. Requires TEACHER role and ownership of the target course.
+        The requesting user must be the teacher who owns the course specified by courseId.
       operationId: createAssignment
       security:
         - bearerAuth: []
@@ -478,7 +526,7 @@ paths:
     put:
       tags: [Assignments]
       summary: Update an assignment
-      description: Updates an assignment. **Requires authentication and ownership of the assignment's parent course.**
+      description: Updates an assignment. Requires authentication and ownership of the assignment's parent course.
       operationId: updateAssignment
       security:
         - bearerAuth: []
@@ -507,7 +555,7 @@ paths:
     delete:
       tags: [Assignments]
       summary: Delete an assignment
-      description: Permanently deletes an assignment. **Requires authentication and ownership.**
+      description: Permanently deletes an assignment. Requires authentication and ownership.
       operationId: deleteAssignment
       security:
         - bearerAuth: []
@@ -523,7 +571,6 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # ── COMMENTS ──────────────────────────────
   /comments:
     get:
       tags: [Comments]
@@ -540,7 +587,7 @@ paths:
             maxLength: 100
         - name: sortBy
           in: query
-          description: Field to sort by. Note — `createdAt` and `updatedAt` are accepted by the validator but the `Comments` model does not include timestamp fields; use `id` for reliable sorting.
+          description: Field to sort by. Note - createdAt and updatedAt are accepted by the validator but the Comments model does not include timestamp fields; use id for reliable sorting.
           schema:
             type: string
             enum: [id, createdAt, updatedAt]
@@ -570,7 +617,7 @@ paths:
     post:
       tags: [Comments]
       summary: Create a comment
-      description: Adds a comment on an assignment. `userId` is derived from the auth token — do not pass it in the body. **Requires authentication.**
+      description: Adds a comment on an assignment. userId is derived from the auth token - do not pass it in the body. Requires authentication.
       operationId: createComment
       security:
         - bearerAuth: []
@@ -617,7 +664,7 @@ paths:
     put:
       tags: [Comments]
       summary: Update a comment
-      description: Updates a comment's content. **Requires authentication and comment ownership.**
+      description: Updates a comment's content. Requires authentication and comment ownership.
       operationId: updateComment
       security:
         - bearerAuth: []
@@ -650,7 +697,7 @@ paths:
     delete:
       tags: [Comments]
       summary: Delete a comment
-      description: Permanently deletes a comment. **Requires authentication and comment ownership.**
+      description: Permanently deletes a comment. Requires authentication and comment ownership.
       operationId: deleteComment
       security:
         - bearerAuth: []
@@ -668,20 +715,15 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-# ─────────────────────────────────────────────
-# COMPONENTS
-# ─────────────────────────────────────────────
 components:
 
-  # ── SECURITY ──────────────────────────────
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JWT token obtained from `POST /api/auth/login`
+      description: JWT token obtained from POST /api/auth/login
 
-  # ── PARAMETERS ────────────────────────────
   parameters:
     PathId:
       name: id
@@ -720,54 +762,8 @@ components:
         minimum: 0
         default: 0
 
-  # ── SCHEMAS ───────────────────────────────
   schemas:
-
-    # Auth
-    SignUpRequest:
-      type: object
-      required: [name, email, password]
-      properties:
-        name:
-          type: string
-          minLength: 3
-          maxLength: 50
-          example: Jane Doe
-        email:
-          type: string
-          format: email
-          example: jane@example.com
-        password:
-          type: string
-          format: password
-          minLength: 8
-          maxLength: 64
-          example: securePass1
-        role:
-          $ref: '#/components/schemas/Role'
-
-    LoginRequest:
-      type: object
-      required: [email, password]
-      properties:
-        email:
-          type: string
-          format: email
-          example: jane@example.com
-        password:
-          type: string
-          format: password
-          example: securePass1
-
-    LoginResponse:
-      type: object
-      properties:
-        accessToken:
-          type: string
-          description: Signed JWT to use as a Bearer token
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-
-    # Users
+      
     UserResponse:
       type: object
       properties:
@@ -782,7 +778,12 @@ components:
           format: email
           example: jane@example.com
         role:
-          $ref: '#/components/schemas/Role'
+          type: string
+          enum: [USER, TEACHER]
+          default: USER
+          description: |
+            - USER - default student role  
+            - TEACHER - elevated role with course/assignment management privileges
 
     UpdateUserRequest:
       type: object
@@ -804,7 +805,6 @@ components:
           maxLength: 64
           example: newSecurePass1
 
-    # Courses — shared by create (all fields required) and update (at least one required)
     CourseRequest:
       type: object
       properties:
@@ -843,7 +843,6 @@ components:
           description: ID of the TEACHER who owns this course
           example: 2
 
-    # Assignments — shared by create and update; courseId and grades are create-only
     AssignmentRequest:
       type: object
       properties:
@@ -881,7 +880,6 @@ components:
           nullable: true
           example: 100
 
-    # Comments — shared by create and update; assignmentId is create-only
     CommentRequest:
       type: object
       properties:
@@ -913,14 +911,7 @@ components:
           description: ID of the user who created the comment
           example: 2
 
-    # Shared / Enums
-    Role:
-      type: string
-      enum: [USER, TEACHER]
-      default: USER
-      description: |
-        - `USER` — default student role  
-        - `TEACHER` — elevated role with course/assignment management privileges
+      
 
     Error:
       type: object
@@ -943,8 +934,6 @@ components:
               message:
                 type: string
                 example: Email is not valid
-
-  # ── RESPONSES ─────────────────────────────
   responses:
     ValidationError:
       description: One or more request fields failed validation

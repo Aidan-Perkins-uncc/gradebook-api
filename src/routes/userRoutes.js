@@ -1,7 +1,7 @@
 import express from 'express';
 import { authenticate } from '../middleware/authenticate.js';
 import { authorizeRoles } from '../middleware/authorizeRoles.js';
-import { getAllUsersHandler, getUserHandler, updateUserHandler, deleteUserHandler, updateUserRoleHandler, getUserByIdHandler } from '../controllers/userController.js';
+import { getAllUsersHandler,  updateUserHandler, deleteUserHandler, updateUserRoleHandler, getUserByIdHandler } from '../controllers/userController.js';
 import { validateId, validateSignUp, validateUpdateUserRole, validateUpdateUser } from '../middleware/userValidators.js';
 import { authorizedRoles } from '../middleware/authRoles.js';
 const router = express.Router();

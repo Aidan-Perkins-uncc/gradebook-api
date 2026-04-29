@@ -19,9 +19,18 @@ export async function getById(id) {
   return comment;
 }
 
-export function create(commentData) {
-  const newcomment = prisma.comments.create({ data: commentData });
-  return newcomment;
+export async function create(commentData) {
+  try{
+    const newcomment = await prisma.comments.create({ data: commentData });
+    return newcomment;
+  } catch (error) {
+    if(error.code === 'P2003') {
+      const error = new Error(`Cannot create comment: referenced assignment with id ${commentData.assignmentId} does not exist.`);
+      error.status = 400;
+      throw error;
+    }
+    throw error;
+  }
 }
 
 export async function update(id, updatedData) {
