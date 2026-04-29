@@ -437,7 +437,7 @@ paths:
       tags: [Assignments]
       summary: Get all assignments
       description: |
-        Returns a list of assignments. courseId and title filters are validated but not yet fully wired through the controller - filtering behavior may be incomplete.
+        Returns a list of assignments.
       operationId: getAllAssignments
       parameters:
         - name: courseId
@@ -611,7 +611,7 @@ paths:
     post:
       tags: [Comments]
       summary: Create a comment
-      description: Adds a comment on an assignment. userId is derived from the auth token - do not pass it in the body. Requires authentication.
+      description: Adds a comment on an assignment. userId is derived from the auth token. Requires authentication.
       operationId: createComment
       security:
         - bearerAuth: []
